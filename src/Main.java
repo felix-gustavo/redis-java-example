@@ -11,7 +11,7 @@ public class Main {
 	}
 	
 	public static void main(String[] args) {
-		boolean redis = false;
+		boolean redis = true;
 		UsuarioControl uc = new UsuarioControl(redis);
 		try {
 //			insereUsuarios(uc);
