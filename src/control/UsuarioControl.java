@@ -8,45 +8,32 @@ import redis.clients.jedis.Jedis;
 
 public class UsuarioControl {
 	private UsuarioDAO uDao;
-	private Jedis jedis;
 	
-	public UsuarioControl(boolean redis) {
+	public UsuarioControl() {
 		this.uDao = new UsuarioDAO();
-		
-		if(redis) this.jedis = new Jedis();
 	}
 
 	public void insereUsuario(String nome) throws SQLException {
 		uDao.insert(new Usuario(nome));
 	}
-	
-	private String buscaUsuariosVerificandoCache() throws SQLException {
+
+	public String buscaUsuarios() throws SQLException {
 		StringBuilder sb = new StringBuilder();
+		Jedis cache = new Jedis();
 		
-		String userCache = jedis != null ? jedis.get("users") : null;
-	
-		if(userCache == null) {			
+		String usuarios = cache.get("users");
+		
+		if(usuarios == null) {
 			for(Usuario us : uDao.get()) {
 				sb.append(us).append("\n");
 			}
-			
-			jedis.set("users", sb.toString());
-		} else {
-			sb.append(userCache);
+			cache.set("users", sb.toString());
+		}else{
+			sb.append(usuarios);
 		}
 		
+		cache.close();
+		
 		return sb.toString();
-	}
-
-	private String buscaUsuariosSemVerificarCache () throws SQLException {
-		StringBuilder sb = new StringBuilder();
-		for(Usuario us : uDao.get()) {
-			sb.append(us).append("\n");
-		}
-		return sb.toString();
-	}
-	
-	public String buscaUsuarios() throws SQLException {
-		return jedis == null ? buscaUsuariosSemVerificarCache() : buscaUsuariosVerificandoCache();
 	}
 }
